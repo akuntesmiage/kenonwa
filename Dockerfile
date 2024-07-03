@@ -1,30 +1,21 @@
 FROM node:lts-buster
 
-# Install necessary packages
 RUN apt-get update && \
-    apt-get install -y \
-    ffmpeg \
-    imagemagick \
-    webp \
-    screen && \
-    apt-get upgrade -y && \
-    rm -rf /var/lib/apt/lists/*
+  apt-get install -y \
+  ffmpeg \
+  imagemagick \
+  webp && \
+  apt-get upgrade -y && \
+  rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+COPY package.json .
 
-# Copy package.json and install dependencies
-COPY package.json package-lock.json ./
-RUN npm install
+RUN yarn
 
-# Copy the rest of the application code
+RUN npm install pm2 -g
+
 COPY . .
 
-# Expose the application's port
-EXPOSE 5000
+EXPOSE 3000
 
-# Create a non-root user
-RUN useradd -m myuser
-USER myuser
-
-# Start the application using screen
-CMD ["screen", "-S", "terminal", "-dm", "node", "main.js"]
+CMD ["pm2-runtime", "index.js"]
